@@ -21,6 +21,7 @@ import static android.content.SharedPreferences.*;
 public class MyWidget extends AppWidgetProvider {
 
     private final static String ACTION_CHANGE = "com.example.samsung.p1201_clickwidget.change_count";
+    public final static int UPDATE_TIME = 0, UPDATE_COUNT = 1, UPDATE_ALL = -1;
 
     @Override
     public void onUpdate(Context context,
@@ -29,7 +30,7 @@ public class MyWidget extends AppWidgetProvider {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
         //Обновление всех экземпляров
         for (int i : appWidgetIds) {
-            updateWidget(context, appWidgetManager, i);
+            updateWidget(context, appWidgetManager, i, UPDATE_TIME);
         }
     }
 
@@ -51,26 +52,31 @@ public class MyWidget extends AppWidgetProvider {
     public static void updateWidget(
             final Context context,
             final AppWidgetManager appWidgetManager,
-            final int widgetID) {
+            final int widgetID,
+            final int updateMode) {
 
         SharedPreferences sp = context.getSharedPreferences(
                 ConfigActivity.WIDGET_PREF,
                 Context.MODE_PRIVATE
         );
-        //Чтение формата времени и определение текущего
-        String timeFormat = sp.getString(ConfigActivity.WIDGET_TIME_FORMAT + widgetID, null);
-
-        if (timeFormat == null) return;
-
-        SimpleDateFormat sdf = new SimpleDateFormat(timeFormat);
-        String currentTime = sdf.format(new Date(System.currentTimeMillis()));
-        //Чтение счётчика
-        String count = String.valueOf(sp.getInt(ConfigActivity.WIDGET_COUNT + widgetID, 0));
-        //Помещение данных в текстовые поля
         RemoteViews widgetView = new RemoteViews(context.getPackageName(), R.layout.widget);
-        widgetView.setTextViewText(R.id.tvTime, currentTime);
-        widgetView.setTextViewText(R.id.tvCount, count);
+        if (updateMode == UPDATE_TIME || updateMode == UPDATE_ALL) {
+            //Чтение формата времени и определение текущего
+            String timeFormat = sp.getString(ConfigActivity.WIDGET_TIME_FORMAT + widgetID, null);
 
+            if (timeFormat == null) return;
+
+            SimpleDateFormat sdf = new SimpleDateFormat(timeFormat);
+            String currentTime = sdf.format(new Date(System.currentTimeMillis()));
+            //Помещение данных в текстовые поля
+            widgetView.setTextViewText(R.id.tvTime, currentTime);
+        }
+        if (updateMode == UPDATE_COUNT || updateMode == UPDATE_ALL) {
+            //Чтение счётчика
+            String count = String.valueOf(sp.getInt(ConfigActivity.WIDGET_COUNT + widgetID, 0));
+            //Помещение данных в текстовые поля
+            widgetView.setTextViewText(R.id.tvCount, count);
+        }
         //Реакция первой зоны - открытие конфигурационного экрана
         Intent configIntent = new Intent(context, ConfigActivity.class);
         configIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE);
@@ -123,7 +129,7 @@ public class MyWidget extends AppWidgetProvider {
                 int cnt = sp.getInt(ConfigActivity.WIDGET_COUNT + mAppWidgetID, 0);
                 sp.edit().putInt(ConfigActivity.WIDGET_COUNT + mAppWidgetID, ++cnt).commit();
                 //Обновление виджета
-                updateWidget(context, AppWidgetManager.getInstance(context), mAppWidgetID);
+                updateWidget(context, AppWidgetManager.getInstance(context), mAppWidgetID, UPDATE_COUNT);
             }
         }
     }

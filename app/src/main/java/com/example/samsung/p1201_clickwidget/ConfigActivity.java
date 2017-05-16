@@ -56,7 +56,7 @@ public class ConfigActivity extends AppCompatActivity {
 
     public void onClickBtnOk(View view) {
         sp.edit().putString(WIDGET_TIME_FORMAT + widgetID, etFormat.getText().toString()).commit();
-        MyWidget.updateWidget(this, AppWidgetManager.getInstance(this), widgetID);
+        MyWidget.updateWidget(this, AppWidgetManager.getInstance(this), widgetID, MyWidget.UPDATE_ALL);
         setResult(RESULT_OK, resultValue);
         finish();
     }
