@@ -43,5 +43,14 @@
         android:textColor="#000"
         android:gravity="center"
         android:text="@string/count"/>
+    <TextView
+        android:id="@+id/tvPressUri"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#ff6600"
+        android:textColor="#000"
+        android:gravity="center"
+        android:text="@string/www_yandex_ru"/>
 
 </LinearLayout>

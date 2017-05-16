@@ -13,11 +13,12 @@ public class ConfigActivity extends AppCompatActivity {
     public final static String
         WIDGET_PREF = "widget_pref",
         WIDGET_TIME_FORMAT = "idget_time_format_",
-        WIDGET_COUNT = "idget_count_";
+        WIDGET_COUNT = "idget_count_",
+        WIDGET_URI = "widget_uri_";
     private int widgetID = AppWidgetManager.INVALID_APPWIDGET_ID;
     private Intent resultValue;
     private SharedPreferences sp;
-    private EditText etFormat;
+    private EditText etFormat, etUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +49,9 @@ public class ConfigActivity extends AppCompatActivity {
         etFormat = (EditText) findViewById(R.id.etFormat);
         etFormat.setText(sp.getString(WIDGET_TIME_FORMAT + widgetID, "HH:mm:ss"));
 
+        etUri = (EditText) findViewById(R.id.etUri);
+        etUri.setText(sp.getString(WIDGET_URI + widgetID, "http://www.yandex.ru"));
+
         int cnt = sp.getInt(ConfigActivity.WIDGET_COUNT + widgetID, -1);
         if (cnt == -1) {
             sp.edit().putInt(WIDGET_COUNT + widgetID, 0);
@@ -55,7 +59,8 @@ public class ConfigActivity extends AppCompatActivity {
     }
 
     public void onClickBtnOk(View view) {
-        sp.edit().putString(WIDGET_TIME_FORMAT + widgetID, etFormat.getText().toString()).commit();
+        sp.edit().putString(WIDGET_TIME_FORMAT + widgetID, etFormat.getText().toString())
+                .putString(WIDGET_URI + widgetID, etUri.getText().toString()).commit();
         MyWidget.updateWidget(this, AppWidgetManager.getInstance(this), widgetID, MyWidget.UPDATE_ALL);
         setResult(RESULT_OK, resultValue);
         finish();

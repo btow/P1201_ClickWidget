@@ -6,11 +6,13 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.RemoteViews;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import static android.content.SharedPreferences.*;
 
@@ -66,7 +68,7 @@ public class MyWidget extends AppWidgetProvider {
 
             if (timeFormat == null) return;
 
-            SimpleDateFormat sdf = new SimpleDateFormat(timeFormat);
+            SimpleDateFormat sdf = new SimpleDateFormat(timeFormat, Locale.ROOT);
             String currentTime = sdf.format(new Date(System.currentTimeMillis()));
             //Помещение данных в текстовые поля
             widgetView.setTextViewText(R.id.tvTime, currentTime);
@@ -77,6 +79,12 @@ public class MyWidget extends AppWidgetProvider {
             //Помещение данных в текстовые поля
             widgetView.setTextViewText(R.id.tvCount, count);
         }
+        //Чтение uri
+        String sUri = sp.getString(ConfigActivity.WIDGET_URI + widgetID, null);
+        Uri uri = Uri.parse(sUri);
+        //Помещение данных в текстовые поля
+        widgetView.setTextViewText(R.id.tvPressUri, sUri);
+
         //Реакция первой зоны - открытие конфигурационного экрана
         Intent configIntent = new Intent(context, ConfigActivity.class);
         configIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE);
@@ -101,6 +109,14 @@ public class MyWidget extends AppWidgetProvider {
                 context, widgetID, countIntent, 0);
         widgetView.setOnClickPendingIntent(R.id.tvPressCount, pendingIntent);
 
+        //Реакция четвёртой зоны - открытие сайта www.yandex.ru в браузере
+        Intent uriIntent = new Intent(Intent.ACTION_VIEW, uri);
+        uriIntent.setAction(Intent.ACTION_VIEW);
+        uriIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetID);
+        pendingIntent = PendingIntent.getActivity(
+                context, widgetID, uriIntent, 0);
+        widgetView.setOnClickPendingIntent(R.id.tvPressUri, pendingIntent);
+
         //Обновление виджета
         appWidgetManager.updateAppWidget(widgetID, widgetView);
     }
@@ -108,8 +124,10 @@ public class MyWidget extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
+
+        String action = intent.getAction();
         //Проверка, является вызов intent'a реакцией на нажатие третьей зоны виджета
-        if (intent.getAction().equalsIgnoreCase(ACTION_CHANGE)) {
+        if (action.equalsIgnoreCase(ACTION_CHANGE)) {
             //Извлечение ID экземпляра виджета
             int mAppWidgetID = AppWidgetManager.INVALID_APPWIDGET_ID;
             Bundle extras = intent.getExtras();
@@ -131,6 +149,8 @@ public class MyWidget extends AppWidgetProvider {
                 //Обновление виджета
                 updateWidget(context, AppWidgetManager.getInstance(context), mAppWidgetID, UPDATE_COUNT);
             }
+        } else if (action.equalsIgnoreCase(Intent.ACTION_VIEW)) {
+            context.startActivity(intent);
         }
     }
 }
